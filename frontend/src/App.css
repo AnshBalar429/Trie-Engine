@@ -1,0 +1,136 @@
+/* GLOBAL RESET & FONTS */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #f0f2f5;
+  color: #333;
+}
+
+/* MAIN LAYOUT */
+.App {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Aligns to top, better for search bars */
+  padding-top: 10vh; /* Push down slightly from top */
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+/* CONTAINER */
+.search-container {
+  width: 90%;
+  max-width: 500px; /* Limits width on large screens */
+  position: relative;
+  text-align: center;
+}
+
+/* TITLE */
+.search-container h1 {
+  margin-bottom: 30px;
+  font-size: 2rem;
+  color: #2c3e50;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* INPUT WRAPPER */
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* INPUT FIELD */
+input[type="text"] {
+  width: 100%;
+  padding: 16px 24px;
+  font-size: 1.1rem;
+  border: 2px solid transparent;
+  border-radius: 50px; /* Pill shape */
+  outline: none;
+  background-color: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); /* Soft shadow */
+  transition: all 0.3s ease;
+  color: #333;
+}
+
+/* INPUT FOCUS STATE */
+input[type="text"]:focus {
+  box-shadow: 0 6px 25px rgba(59, 130, 246, 0.25); /* Blue glow */
+  border-color: #3b82f6; /* Modern blue */
+  transform: translateY(-2px); /* Slight lift */
+}
+
+/* SUGGESTIONS DROPDOWN */
+.suggestions-list {
+  position: absolute;
+  top: 110%; /* Just below the input */
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  list-style: none;
+  overflow: hidden;
+  z-index: 100;
+  animation: slideDown 0.2s ease-out;
+}
+
+/* LIST ITEM */
+.suggestions-list li {
+  padding: 14px 24px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.suggestions-list li:last-child {
+  border-bottom: none;
+}
+
+/* HOVER EFFECT */
+.suggestions-list li:hover {
+  background-color: #f8faff;
+  padding-left: 28px; /* Subtle movement effect */
+}
+
+/* MATCHED WORD TEXT */
+.word {
+  font-weight: 500;
+  font-size: 1rem;
+  color: #2c3e50;
+}
+
+.suggestions-list li:hover .word {
+  color: #3b82f6; /* Highlight text on hover */
+}
+
+/* SCORE BADGE */
+.score {
+  font-size: 0.75rem;
+  background-color: #eef2f6;
+  color: #64748b;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* ANIMATION */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
