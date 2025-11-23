@@ -157,6 +157,7 @@ int main() {
     Trie tr;
 
     cout << "Loading files from data directory..." << endl;
+    int fileCount = 0;
     for (auto &p : fs::directory_iterator("./data")) {
         if (!fs::is_regular_file(p) || p.path().extension() != ".txt") continue;
 
@@ -172,8 +173,9 @@ int main() {
             tr.insert(word, filename);
         }
         fin.close();
-        cout << "Loaded: " << filename << endl;
+        fileCount++;
     }
+    cout << "Loaded " << fileCount << " files." << endl;
 
     cout << "Building Trie recommendations..." << endl;
     tr.start_build();
