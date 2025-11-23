@@ -28,3 +28,4 @@ services:
 networks:
   trie-network:
     driver: bridge
+

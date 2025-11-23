@@ -1,7 +1,9 @@
 #include "httplib.h"
 #include <bits/stdc++.h>
+#include <filesystem>
 
 using namespace std;
+namespace fs = filesystem;
 
 int getIndex(char x){
     if(x>='a' && x<='z') return x-'a'+10;
@@ -95,8 +97,6 @@ public:
             recs.push_back({it.first,temp});
         }
 
-        node->recommend=recs;
-
         if(node->isEndOfWord){
             string temp = "";
             temp+=lastLetter;
@@ -114,6 +114,10 @@ public:
                 }
             }
         }
+
+        node->recommend=recs;
+
+        
         return recs;
     }
 
@@ -133,6 +137,18 @@ public:
         }
         return recs = current->recommend;
     }
+
+    set<string> OR_search(vector<string> words){
+        set<string> files;
+        for(auto &word : words){
+            set<string> files1 = search(word);
+            for(auto &file : files1){
+                files.insert(file);
+            }
+        }
+        return files;
+    } 
+
 };
 
 
@@ -140,16 +156,23 @@ public:
 int main() {
     Trie tr;
 
-    vector<string> tp1 = {
-        "harsh","harsh","harshxy","harshxy","harshxy",
-        "harshxyz","harshxyz","harshxyz","harshxyz",
-        "harshtp","harsyrt","harshytiyu","abcsdsr","seziwuad",
-        "react", "reading", "real", "render"
-    };
+    cout << "Loading files from data directory..." << endl;
+    for (auto &p : fs::directory_iterator("./data")) {
+        if (!fs::is_regular_file(p) || p.path().extension() != ".txt") continue;
 
-    string s = "file";
-    for(int i=0;i<tp1.size();i++){
-        tr.insert(tp1[i],s);
+        string filename = p.path().filename().string();
+        ifstream fin(p.path());
+        if (!fin.is_open()) {
+            cerr << "Warning: Could not open file: " << p.path() << endl;
+            continue;
+        }
+
+        string word;
+        while (fin >> word) {
+            tr.insert(word, filename);
+        }
+        fin.close();
+        cout << "Loaded: " << filename << endl;
     }
 
     cout << "Building Trie recommendations..." << endl;
@@ -188,6 +211,80 @@ int main() {
         json += "]";
 
         res.set_content(json, "application/json");
+    });
+
+    svr.Get("/search", [&](const httplib::Request& req, httplib::Response& res) {
+        res.set_header("Access-Control-Allow-Origin", "*");
+        res.set_header("Access-Control-Allow-Methods", "GET");
+        res.set_header("Access-Control-Allow-Headers", "Content-Type");
+
+        string query = "";
+        if (req.has_param("q")) {
+            query = req.get_param_value("q");
+        }
+
+        if(query.empty()) {
+            res.set_content("[]", "application/json");
+            return;
+        }
+
+        vector<string> words;
+        stringstream ss(query);
+        string word;
+        while (ss >> word) {
+            if(!word.empty()) {
+                words.push_back(word);
+            }
+        }
+
+        set<string> files;
+        if(words.empty()) {
+            res.set_content("[]", "application/json");
+            return;
+        } else if(words.size() == 1) {
+            files = tr.search(words[0]);
+        } else {
+            files = tr.OR_search(words);
+        }
+
+        string json = "[";
+        bool first = true;
+        for(const string& file : files) {
+            if(!first) json += ",";
+            json += "\"" + file + "\"";
+            first = false;
+        }
+        json += "]";
+
+        res.set_content(json, "application/json");
+    });
+
+    svr.Get("/file", [&](const httplib::Request& req, httplib::Response& res) {
+        res.set_header("Access-Control-Allow-Origin", "*");
+        res.set_header("Access-Control-Allow-Methods", "GET");
+        res.set_header("Access-Control-Allow-Headers", "Content-Type");
+
+        string filename = "";
+        if (req.has_param("name")) {
+            filename = req.get_param_value("name");
+        }
+
+        if(filename.empty()) {
+            res.set_content("", "text/plain");
+            return;
+        }
+
+        string filepath = "./data/" + filename;
+        ifstream file(filepath);
+        if (!file.is_open()) {
+            res.set_content("", "text/plain");
+            return;
+        }
+
+        string content((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
+        file.close();
+
+        res.set_content(content, "text/plain");
     });
 
     svr.listen("0.0.0.0", 8080);
